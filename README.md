@@ -2,16 +2,16 @@
 
 Neovim plugin for [DictateYourTerms](https://github.com/nicolasayotte/dictate-your-terms) — zero-latency voice dictation inside the editor.
 
-Opens a floating terminal running `dyt --record`, waits for you to speak and press Enter, auto-closes the float, then inserts the transcript at the cursor. Works from both normal and insert mode.
+Opens a centered floating terminal running `dyt --record`, waits for you to speak and press Enter, auto-closes the float, then inserts the transcript at the cursor. Works from normal and insert mode.
 
-## Prerequisites
+## Requirements
 
-- `stt-daemon` must be running before invoking the keymap.
-- The `dyt` binary must be on `PATH` in the environment that launches Neovim.
+- [`dyt`](https://github.com/nicolasayotte/dictate-your-terms) binary on `PATH` in the environment that launches Neovim.
+- `stt-daemon` running before invoking the keymap.
 
 ## Installation
 
-**lazy.nvim**
+### lazy.nvim — minimal
 
 ```lua
 {
@@ -20,7 +20,41 @@ Opens a floating terminal running `dyt --record`, waits for you to speak and pre
 }
 ```
 
-**lazy.nvim (local clone)**
+### lazy.nvim — lazy-loaded by key
+
+The plugin loads only when the keymap is first pressed. Pass `keys` matching
+your `keymap` option (default `<leader>v`).
+
+```lua
+{
+  'nicolasayotte/dyt.nvim',
+  keys = {
+    { '<leader>v', desc = 'DictateYourTerms: voice dictation', mode = { 'n', 'i' } },
+  },
+  opts = {},
+}
+```
+
+### lazy.nvim — full spec with all defaults shown
+
+```lua
+{
+  'nicolasayotte/dyt.nvim',
+  keys = {
+    { '<leader>v', desc = 'DictateYourTerms: voice dictation', mode = { 'n', 'i' } },
+  },
+  opts = {
+    keymap     = '<leader>v',             -- trigger key; false to disable
+    daemon     = 'http://127.0.0.1:3030', -- stt-daemon base URL
+    win_width  = 0.5,                     -- float width as fraction of editor width
+    win_height = 10,                      -- float height in rows
+    border     = 'rounded',               -- nvim_open_win border style
+    notify     = true,                    -- emit vim.notify status messages
+  },
+}
+```
+
+### lazy.nvim — local clone
 
 ```lua
 {
@@ -28,6 +62,9 @@ Opens a floating terminal running `dyt --record`, waits for you to speak and pre
   opts = {},
 }
 ```
+
+<details>
+<summary>Other plugin managers</summary>
 
 **packer.nvim**
 
@@ -41,59 +78,45 @@ use 'nicolasayotte/dyt.nvim'
 Plug 'nicolasayotte/dyt.nvim'
 ```
 
-The plugin auto-initialises with defaults on startup via `plugin/dyt.lua`. If you call `setup()` yourself before that fires, the shim is a no-op.
+The plugin auto-initialises with defaults on startup via `plugin/dyt.lua`. Call
+`require('dyt').setup(opts)` yourself if you want to override options.
+
+</details>
 
 ## Configuration
 
-Call `require('dyt').setup(opts)`. All keys are optional.
+All keys are optional. With lazy.nvim, pass options in `opts`; otherwise call
+`require('dyt').setup(opts)` anywhere in your config.
 
-```lua
-require('dyt').setup({
-  keymap     = '<leader>v',             -- trigger in normal and insert mode
-  daemon     = 'http://127.0.0.1:3030', -- stt-daemon address
-  win_width  = 0.5,                     -- float width as fraction of editor width
-  win_height = 10,                      -- float height in rows
-  border     = 'rounded',               -- any nvim_open_win border style
-  notify     = true,                    -- emit vim.notify status messages
-})
-```
+| Option       | Type             | Default                   | Description                                            |
+|--------------|------------------|---------------------------|--------------------------------------------------------|
+| `keymap`     | `string\|false`  | `'<leader>v'`             | Key bound in normal and insert mode. `false` disables. |
+| `daemon`     | `string`         | `'http://127.0.0.1:3030'` | HTTP base URL of the running `stt-daemon`.             |
+| `win_width`  | `number`         | `0.5`                     | Float width as a fraction of the editor width.         |
+| `win_height` | `number`         | `10`                      | Float height in rows.                                  |
+| `border`     | `string`         | `'rounded'`               | Border style passed to `nvim_open_win`.                |
+| `notify`     | `boolean`        | `true`                    | Emit `vim.notify` status messages.                     |
 
-With lazy.nvim the same table goes in `opts`:
+### Custom keymap
+
+Set `keymap = false` and bind `M.start_dictation` yourself:
 
 ```lua
 {
   'nicolasayotte/dyt.nvim',
-  opts = {
-    keymap = '<C-r>',
+  keys = {
+    { '<C-r>', function() require('dyt').start_dictation() end, desc = 'DictateYourTerms: voice dictation', mode = { 'n', 'i' } },
   },
+  opts = { keymap = false },
 }
-```
-
-### Options
-
-| Option       | Type    | Default                    | Description                                           |
-|--------------|---------|----------------------------|-------------------------------------------------------|
-| `keymap`     | string  | `'<leader>v'`              | Key bound in normal and insert mode. `false` disables.|
-| `daemon`     | string  | `'http://127.0.0.1:3030'`  | HTTP base URL of the running `stt-daemon`             |
-| `win_width`  | number  | `0.5`                      | Float width as a fraction of the editor width         |
-| `win_height` | number  | `10`                       | Float height in rows                                  |
-| `border`     | string  | `'rounded'`                | Border style passed to `nvim_open_win`                |
-| `notify`     | boolean | `true`                     | Emit `vim.notify` status messages                     |
-
-### Disable the default keymap
-
-```lua
-require('dyt').setup({ keymap = false })
--- then bind yourself:
-vim.keymap.set('n', '<C-r>', require('dyt').start_dictation)
 ```
 
 ## Behaviour
 
-1. The keymap opens a floating terminal and runs `dyt --record`.
+1. The keymap opens a centered floating terminal and runs `dyt --record`.
 2. Speak. Press Enter in the terminal to stop recording.
 3. The float closes automatically.
-4. The transcript is read from the system clipboard and inserted at the cursor.
+4. The transcript is read from the system clipboard (`+` register) and inserted at the cursor.
 5. A re-entrancy guard prevents a second invocation while the float is open.
 6. On non-zero exit, an error notification is shown and state is cleaned up.
 
