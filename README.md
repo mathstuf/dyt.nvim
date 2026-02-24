@@ -1,6 +1,6 @@
 # dyt.nvim
 
-Neovim plugin for [DictateYourTerms](https://github.com/fencemaker/dictate-your-terms) — zero-latency voice dictation inside the editor.
+Neovim plugin for [DictateYourTerms](https://github.com/nicolasayotte/dictate-your-terms) — zero-latency voice dictation inside the editor.
 
 Opens a floating terminal running `dyt --record`, waits for you to speak and press Enter, auto-closes the float, then inserts the transcript at the cursor. Works from both normal and insert mode.
 
@@ -15,7 +15,7 @@ Opens a floating terminal running `dyt --record`, waits for you to speak and pre
 
 ```lua
 {
-  'fencemaker/dyt.nvim',
+  'nicolasayotte/dyt.nvim',
   opts = {},
 }
 ```
@@ -32,13 +32,13 @@ Opens a floating terminal running `dyt --record`, waits for you to speak and pre
 **packer.nvim**
 
 ```lua
-use 'fencemaker/dyt.nvim'
+use 'nicolasayotte/dyt.nvim'
 ```
 
 **vim-plug**
 
 ```vim
-Plug 'fencemaker/dyt.nvim'
+Plug 'nicolasayotte/dyt.nvim'
 ```
 
 The plugin auto-initialises with defaults on startup via `plugin/dyt.lua`. If you call `setup()` yourself before that fires, the shim is a no-op.
@@ -62,7 +62,7 @@ With lazy.nvim the same table goes in `opts`:
 
 ```lua
 {
-  'fencemaker/dyt.nvim',
+  'nicolasayotte/dyt.nvim',
   opts = {
     keymap = '<C-r>',
   },

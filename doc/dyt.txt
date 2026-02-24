@@ -31,7 +31,7 @@ cursor. Works from both normal and insert mode.
 
 lazy.nvim: >lua
   {
-    'fencemaker/dyt.nvim',
+    'nicolasayotte/dyt.nvim',
     opts = {},
   }
 <
