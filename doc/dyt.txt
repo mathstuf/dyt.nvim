@@ -1,0 +1,113 @@
+*dyt.txt*  Voice dictation inside Neovim via DictateYourTerms
+
+==============================================================================
+CONTENTS                                                          *dyt-contents*
+
+  1. Introduction .............. |dyt-intro|
+  2. Prerequisites ............. |dyt-prerequisites|
+  3. Installation .............. |dyt-installation|
+  4. Configuration ............. |dyt-configuration|
+  5. Options ................... |dyt-options|
+  6. Behaviour ................. |dyt-behaviour|
+  7. Lua API ................... |dyt-api|
+
+==============================================================================
+1. INTRODUCTION                                                      *dyt-intro*
+
+dyt.nvim is the official Neovim plugin for DictateYourTerms.
+
+It opens a floating terminal running `dyt --record`, waits for you to speak
+and press Enter, auto-closes the float, then inserts the transcript at the
+cursor. Works from both normal and insert mode.
+
+==============================================================================
+2. PREREQUISITES                                               *dyt-prerequisites*
+
+- `stt-daemon` must be running before invoking the keymap.
+- The `dyt` binary must be on PATH in the environment that launches Neovim.
+
+==============================================================================
+3. INSTALLATION                                                *dyt-installation*
+
+lazy.nvim: >lua
+  {
+    'fencemaker/dyt.nvim',
+    opts = {},
+  }
+<
+
+The plugin auto-initialises with defaults on startup. Calling |dyt.setup()|
+before the auto-init fires makes the auto-init a no-op.
+
+==============================================================================
+4. CONFIGURATION                                               *dyt-configuration*
+
+Call `require('dyt').setup(opts)` in your config, or pass `opts` to lazy.nvim.
+All keys are optional. >lua
+
+  require('dyt').setup({
+    keymap     = '<leader>v',
+    daemon     = 'http://127.0.0.1:3030',
+    win_width  = 0.5,
+    win_height = 10,
+    border     = 'rounded',
+    notify     = true,
+  })
+<
+
+==============================================================================
+5. OPTIONS                                                          *dyt-options*
+
+                                                               *dyt-opt-keymap*
+keymap (string | false)                         default: `'<leader>v'`
+  Key sequence bound in both normal and insert mode.
+  Pass `false` to suppress the default binding.
+
+                                                               *dyt-opt-daemon*
+daemon (string)                        default: `'http://127.0.0.1:3030'`
+  HTTP base URL of the running `stt-daemon`.
+
+                                                            *dyt-opt-win_width*
+win_width (number)                                              default: `0.5`
+  Width of the dictation float as a fraction of the editor width.
+
+                                                           *dyt-opt-win_height*
+win_height (number)                                              default: `10`
+  Height of the dictation float in rows.
+
+                                                               *dyt-opt-border*
+border (string)                                            default: `'rounded'`
+  Border style passed to `nvim_open_win`. Any value accepted by that API
+  is valid: `'none'`, `'single'`, `'double'`, `'rounded'`, `'solid'`, etc.
+
+                                                               *dyt-opt-notify*
+notify (boolean)                                               default: `true`
+  When true, status messages are emitted via `vim.notify`.
+
+==============================================================================
+6. BEHAVIOUR                                                      *dyt-behaviour*
+
+1. The keymap opens a floating terminal running `dyt --record`.
+2. Speak. Press Enter in the terminal to stop recording.
+3. The float closes automatically when `dyt` exits.
+4. The transcript is read from the system clipboard (`+` register) and
+   inserted at the cursor via `nvim_put`.
+5. A re-entrancy guard prevents a second invocation while the float is open.
+6. On non-zero exit from `dyt`, an error notification is shown and all
+   internal state is reset cleanly.
+
+==============================================================================
+7. LUA API                                                             *dyt-api*
+
+                                                                   *dyt.setup()*
+require('dyt').setup({opts})
+  Initialise the plugin. See |dyt-options| for available keys.
+  Must be called at most once. Subsequent calls are no-ops.
+
+                                                         *dyt.start_dictation()*
+require('dyt').start_dictation()
+  Programmatically start a dictation session. Useful when `keymap = false`
+  and you want to bind the function yourself.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
