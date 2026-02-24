@@ -147,7 +147,7 @@ local function register_keymap()
     return
   end
   local opts = { noremap = true, silent = true, desc = 'DictateYourTerms: voice dictation' }
-  vim.keymap.set({ 'n', 'i' }, km, start_dictation, opts)
+  vim.keymap.set('n', km, start_dictation, opts)
 end
 
 function M.setup(opts)
