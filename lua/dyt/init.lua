@@ -95,10 +95,20 @@ local function on_exit(_, exit_code, _)
   end)
 end
 
+local function daemon_running()
+  vim.fn.system({ 'curl', '--max-time', '1', '--silent', '--head', M._config.daemon })
+  return vim.v.shell_error == 0
+end
+
 local function start_dictation()
   -- also exposed as M.start_dictation for users who set keymap = false
   if M._recording then
     notify('Already recording.', vim.log.levels.WARN)
+    return
+  end
+
+  if not daemon_running() then
+    notify('dyt-daemon not running at ' .. M._config.daemon, vim.log.levels.WARN)
     return
   end
 
